@@ -30,3 +30,20 @@ A ideia surgiu a partir de uma experiência concreta dentro da equipe. Uma das i
 Atualmente, esse tipo de organização pode ocorrer por meio de diferentes canais informais, dificultando a descoberta de comunidades, o acompanhamento de mobilizações e a centralização de informações relevantes. A partir dessa necessidade, o **4Life** propõe uma plataforma social dedicada à comunidade de doadores, buscando fortalecer grupos existentes, facilitar a criação de novas comunidades, organizar mobilizações e disponibilizar informações que contribuam para esclarecer dúvidas e combater mitos relacionados à doação.
 
 ---
+## Impacto social esperado
+
+O 4Life é direcionado principalmente à comunidade formada por doadores de sangue e por pessoas interessadas em participar desse movimento. A plataforma busca oferecer um espaço no qual essas pessoas possam se conectar, encontrar comunidades próximas, acompanhar mobilizações e acessar informações relacionadas à doação. Dessa forma, pretende-se facilitar a participação individual e, principalmente, fortalecer a organização coletiva de grupos que já atuam na mobilização de doadores.
+
+Ao centralizar essas interações em uma plataforma dedicada, o 4Life poderá contribuir para tornar a mobilização de doadores mais organizada e acessível, facilitando a divulgação de eventos, a formação de novas comunidades e a participação de seus membros. Paralelamente, a disponibilização de informações básicas busca reduzir dúvidas e esclarecer questões frequentemente associadas à doação, contribuindo para que os usuários tenham maior acesso a informações confiáveis antes de procurar um serviço de hemoterapia.
+
+O impacto da plataforma poderá ser acompanhado por indicadores quantitativos diretamente relacionados às funcionalidades disponibilizadas pelo sistema. Entre eles, destacam-se a **quantidade de usuários cadastrados**, o **número de comunidades criadas**, a **quantidade de membros participantes das comunidades**, o **número de mobilizações e eventos criados** e a **quantidade de usuários que manifestaram interesse em participar dessas mobilizações**. Esses indicadores permitem avaliar objetivamente o nível de utilização das principais funcionalidades do 4Life e sua capacidade de promover a organização da comunidade.
+
+Também poderão ser considerados indicadores relacionados ao próprio desenvolvimento e à evolução do projeto, como a quantidade de funcionalidades implementadas, versões disponibilizadas e contribuições realizadas no repositório do projeto. Esses dados podem ser obtidos diretamente a partir das ferramentas utilizadas durante o desenvolvimento, permitindo acompanhar quantitativamente a evolução da plataforma sem exigir um período prolongado de utilização em produção.
+
+É importante destacar que o **4Life não é um sistema destinado aos hemocentros e não pretende realizar o gerenciamento da rede de serviços de hemoterapia, do transporte de sangue, dos estoques, das bolsas coletadas ou das demandas hospitalares**. Também não será responsável pelo processo clínico de doação ou pelo agendamento da coleta junto às instituições responsáveis. Seu propósito está em uma camada diferente: **a comunidade que reúne os doadores e as pessoas interessadas em doar**.
+
+Assim, o impacto esperado do 4Life não deve ser medido diretamente pela quantidade de sangue coletado ou pela variação dos estoques dos hemocentros. A proposta é avaliar a capacidade da plataforma de **conectar pessoas, fortalecer comunidades, organizar mobilizações e facilitar o acesso a informações sobre a doação de sangue**. O projeto busca, portanto, atuar como um facilitador da mobilização social em torno da doação, aproximando a comunidade de doadores dos locais e das oportunidades existentes para realizar esse ato.
+
+O objetivo não é atribuir diretamente ao 4Life o aumento dos estoques de sangue, uma vez que a plataforma não controla o processo clínico de coleta. O foco da avaliação está em medir sua capacidade de **conectar, informar e mobilizar pessoas em torno da doação**.
+
+---
