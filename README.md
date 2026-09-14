@@ -47,3 +47,34 @@ Assim, o impacto esperado do 4Life não deve ser medido diretamente pela quantid
 O objetivo não é atribuir diretamente ao 4Life o aumento dos estoques de sangue, uma vez que a plataforma não controla o processo clínico de coleta. O foco da avaliação está em medir sua capacidade de **conectar, informar e mobilizar pessoas em torno da doação**.
 
 ---
+## Esboço da solução
+
+O **4Life** será uma plataforma social voltada à comunidade de doadores de sangue. A proposta é reunir, em um único ambiente, recursos que facilitem a conexão entre pessoas, a formação de comunidades, a organização de mobilizações e o acesso a informações sobre a doação.
+
+O usuário poderá utilizar a plataforma para encontrar comunidades e grupos de doadores próximos, participar dessas comunidades e acompanhar as atividades organizadas por seus membros. A partir dessas comunidades, será possível criar e divulgar mobilizações para reunir pessoas interessadas em realizar uma doação em determinada data e local.
+
+Por exemplo, uma comunidade de doadores de uma determinada cidade poderá criar uma mobilização informando que pretende realizar uma doação em um hemocentro em uma data específica. Outros usuários poderão encontrar essa mobilização, visualizar suas informações e manifestar interesse em participar. Dessa forma, a plataforma busca facilitar a organização que normalmente ocorre por meio de diferentes canais de comunicação e aproximar pessoas que possuem o mesmo objetivo.
+
+Além das comunidades e mobilizações, o 4Life disponibilizará informações relacionadas à doação de sangue. Os usuários poderão consultar conteúdos educativos e respostas para dúvidas frequentes, incluindo informações básicas sobre requisitos para doação, documentos necessários, cuidados antes da coleta e outras questões que possam gerar dúvidas ou insegurança. Esses conteúdos também poderão abordar mitos e informações incorretas frequentemente associados à doação, contribuindo para que o usuário encontre informações confiáveis antes de procurar um serviço de hemoterapia.
+
+A plataforma poderá ainda apresentar os hemocentros e locais de coleta disponíveis, permitindo que o usuário encontre serviços próximos e consulte informações básicas sobre eles, como localização, horários e períodos de atendimento. Essas informações terão caráter orientativo e servirão para aproximar a comunidade dos serviços onde a doação efetivamente ocorre.
+
+### Organização do domínio
+
+Para sustentar essas funcionalidades, o domínio do 4Life será organizado em quatro áreas principais, que representam diferentes responsabilidades da plataforma:
+
+- **Doadores:** concentra as informações dos usuários que participam da plataforma, incluindo seus perfis e informações relevantes para sua participação na comunidade.
+
+- **Comunidades:** é responsável pela formação e organização dos grupos de doadores. Os usuários poderão encontrar comunidades, participar delas e, conforme as regras estabelecidas pela plataforma, criar e administrar novos grupos.
+
+- **Mobilizações:** concentra a organização dos eventos de doação promovidos pelas comunidades. Uma mobilização poderá estar associada a uma comunidade, indicar uma data e horário, informar o local ou hemocentro relacionado e registrar os usuários interessados em participar.
+
+- **Informações:** organiza os conteúdos educativos e orientativos disponibilizados pela plataforma, facilitando o acesso a informações básicas sobre doação de sangue e a esclarecimentos para dúvidas frequentes.
+
+Essa divisão permite que cada área possua uma responsabilidade de negócio própria, ao mesmo tempo em que as funcionalidades da plataforma permanecem relacionadas entre si. Uma comunidade, por exemplo, poderá organizar uma mobilização; essa mobilização estará associada a um local de coleta e poderá reunir diversos usuários interessados em participar. Da mesma forma, esses usuários poderão consultar informações sobre a doação antes de participar de uma mobilização.
+
+A organização do domínio também estabelece a base para a implementação distribuída do projeto. Cada uma dessas quatro responsabilidades será representada por um **microsserviço de domínio independente**, com seu próprio banco de dados e responsabilidades bem definidas. Dessa forma, o 4Life contempla os quatro microsserviços de domínio previstos nos requisitos mínimos do projeto, mantendo os dados de cada serviço em instâncias de banco separadas.
+
+A plataforma também será disponibilizada por meio de **dois clientes distintos**, permitindo que diferentes formas de interação com os serviços sejam exploradas. Esses clientes poderão atender a diferentes necessidades de utilização da plataforma, mantendo os mesmos serviços de domínio como base para o funcionamento do sistema.
+
+A separação em serviços não significa que cada parte funcione de maneira isolada. As principais funcionalidades do 4Life dependem da interação entre diferentes áreas do domínio. Uma mobilização, por exemplo, pode envolver uma comunidade responsável por sua organização, usuários interessados em participar e um local de coleta associado ao evento. Essas relações entre serviços permitem que operações de negócio atravessem diferentes partes do sistema, formando a base necessária para explorar mecanismos de comunicação e consistência distribuída, incluindo transações que envolvam múltiplos serviços.
