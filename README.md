@@ -78,3 +78,57 @@ A organização do domínio também estabelece a base para a implementação dis
 A plataforma também será disponibilizada por meio de **dois clientes distintos**, permitindo que diferentes formas de interação com os serviços sejam exploradas. Esses clientes poderão atender a diferentes necessidades de utilização da plataforma, mantendo os mesmos serviços de domínio como base para o funcionamento do sistema.
 
 A separação em serviços não significa que cada parte funcione de maneira isolada. As principais funcionalidades do 4Life dependem da interação entre diferentes áreas do domínio. Uma mobilização, por exemplo, pode envolver uma comunidade responsável por sua organização, usuários interessados em participar e um local de coleta associado ao evento. Essas relações entre serviços permitem que operações de negócio atravessem diferentes partes do sistema, formando a base necessária para explorar mecanismos de comunicação e consistência distribuída, incluindo transações que envolvam múltiplos serviços.
+## Visão geral
+
+De forma conceitual, o 4Life conecta usuários, comunidades, mobilizações e informações em um ciclo de interação:
+
+```text
+                                                       ┌──────────────────────┐
+                                                       │      Informações     │
+                                                       │  dúvidas, orientações│
+                                                       │      e conteúdos     │
+                                                       └──────────▲───────────┘
+                                                                  │
+                                                                  │ consulta
+                                                                  │
+                            ┌──────────────────┐           ┌──────┴────────────┐
+                            │   Comunidades    │◄─────────►│     Usuários      │
+                            │  e grupos de     │           │ doadores e pessoas│
+                            │     doadores     │           │    interessadas   │
+                            └────────┬─────────┘           └─────┬─────────────┘
+                                     │                           │
+                                     │ organizam                 │ participam
+                                     │                           │
+                                     ▼                           ▼
+                            ┌──────────────────────────────────────────────┐
+                            │                 Mobilizações                 │
+                            │          eventos, datas e locais de doação   │
+                            └──────────────────────┬───────────────────────┘
+                                                   │
+                                                   │ aproximam e mobilizam
+                                                   │
+                                                   ▼
+                                            ┌───────────────┐
+                                            │  Comunidades  │
+                                            │  e grupos de  │
+                                            │    doadores   │
+                                            └───────────────┘
+
+```
+
+--- 
+
+## Repositório
+
+O projeto **4Life**, desenvolvido pela startup **Nibble** no contexto da disciplina de **Sistemas Distribuídos**, possui seu código-fonte e demais artefatos de desenvolvimento disponibilizados neste repositório público.
+
+### Equipe
+
+O projeto é desenvolvido por uma equipe composta por quatro integrantes:
+
+| Integrante | GitHub |
+| --- | --- |
+| L. Kennedy Gervásio Turola | [@Kenny-0h](https://github.com/Kenny-0h) |
+| Thaís Giovanna Lopes | [@thaisgiolopes](https://github.com/thaisgiolopes) |
+| Tobias Maugus Bueno Cougo  | [@TobiasMaugus](https://github.com/TobiasMaugus) |
+| João Gabriel Salomão Baldim | [@Goblinjg](https://github.com/Goblinjg) |
