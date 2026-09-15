@@ -132,3 +132,31 @@ O projeto é desenvolvido por uma equipe composta por quatro integrantes:
 | Thaís Giovanna Lopes | [@thaisgiolopes](https://github.com/thaisgiolopes) |
 | Tobias Maugus Bueno Cougo  | [@TobiasMaugus](https://github.com/TobiasMaugus) |
 | João Gabriel Salomão Baldim | [@Goblinjg](https://github.com/Goblinjg) |
+
+
+---
+### Referências
+
+<a id="1"></a>
+
+**[1]** PEREIRA, J. R. et al. *Doar ou não doar, eis a questão: uma análise dos fatores críticos da doação de sangue*. Ciência & Saúde Coletiva, v. 21, n. 8, p. 2475–2484, 2016. DOI: `10.1590/1413-81232015218.24062015`.
+
+<a id="2"></a>
+
+**[2]** PASCHOALETTI, M. E.; MARCHELLI, L. P. *Barreiras e facilitadores para a doação de sangue no Brasil: uma revisão de literatura*. Universidade Nove de Julho (UNINOVE), 2025.
+
+<a id="3"></a>
+
+**[3]** NOGUEIRA, G. D. et al. *Conhecimento de Adolescentes Sobre a Doação de Sangue*. Saúde Coletiva, v. 14, n. 91, p. 13532–13547, 2024. DOI: `10.36489/saudecoletiva.2024v14i91p13532-13547`.
+
+<a id="4"></a>
+
+**[4]** MESQUITA, N. F. et al. *Dificuldades e estratégias relacionadas com a doação de sangue em um serviço de hemoterapia*. Revista Rene, v. 22, e70830, 2021. DOI: `10.15253/2175-6783.20212270830`.
+
+---
+
+## Status do projeto
+
+💡 **Em concepção**
+
+O projeto **4Life** encontra-se atualmente em fase de concepção, com foco na definição do problema, da proposta de solução, do escopo e das principais funcionalidades da plataforma. A implementação do sistema será realizada nas próximas etapas do projeto.
