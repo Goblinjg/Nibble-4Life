@@ -180,7 +180,7 @@ O projeto é desenvolvido por uma equipe composta por quatro integrantes:
 
 <a id="2"></a>
 
-**[2]** PASCHOALETTI, M. E.; MARCHELLI, L. P. *Barreiras e facilitadores para a doação de sangue no Brasil: uma revisão de literatura*. Universidade Nove de Julho (UNINOVE), 2025.
+**[2]** PASCHOALETTI, M. E.; MARCHELLI, L. P. *Barreiras e facilitadores para a doação de sangue no Brasil: uma revisão de literatura*. Universidade Nove de Julho (UNINOVE), 2025. DOI: `10.1016/j.htct.2025.105714`.
 
 <a id="3"></a>
 
