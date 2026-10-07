@@ -6,9 +6,9 @@ export function criarApp(): FastifyInstance {
   const app = Fastify({ logger: { level: config.logLevel } });
 
   app.get('/health', { logLevel: 'warn' }, async () => ({ status: 'ok', servico: config.servico, instancia: config.instancia }));
-  // O BFF não tem estado nem banco: está pronto assim que o processo sobe.
-  // Não checamos os serviços aqui para não propagar falhas em cascata (um serviço fora
-  // tiraria o BFF inteiro do balanceamento, inclusive as telas que não dependem dele).
+  // Verifica se o BFF está disponível e responde à requisição de health check.
+  // Como o BFF não mantém estado próprio, a verificação considera apenas o
+  // funcionamento do próprio processo.
   app.get('/ready', { logLevel: 'warn' }, async () => ({ status: 'ready' }));
 
   app.setErrorHandler((erro: Error & { statusCode?: number }, req, reply) => {
