@@ -114,7 +114,8 @@ aplicadas). No `mobilizacoes-service`, que publica eventos, o `/ready` exige tam
 
 | Código | Quando |
 |---|---|
-| `201 Created` | recurso criado (cadastro, comunidade, mobilização, interesse) |
+| `201 Created` | recurso criado de forma síncrona (cadastro, comunidade, interesse; mobilização no protótipo atual) |
+| `202 Accepted` | comando aceito para processamento assíncrono; criação de mobilização durante a SAGA |
 | `204 No Content` | remoção bem-sucedida (sair da comunidade, retirar interesse) |
 | `400 Bad Request` | validação de schema (JSON Schema do Fastify) ou caminho com `..` |
 | `401 Unauthorized` | token ausente, inválido ou expirado; credenciais erradas |
@@ -128,7 +129,7 @@ aplicadas). No `mobilizacoes-service`, que publica eventos, o `/ready` exige tam
 
 ## 2.2 Estratégia de versionamento 
 
-**Decisão: versão no caminho (URI), aplicada na borda: `/api/v1/mobile/...`, `/api/v1/web/...`.**
+**Decisão arquitetural: versão no caminho (URI), aplicada na borda: `/api/v1/mobile/...`, `/api/v1/web/...`.**
 
 - **Por que URI e não header (`Accept: application/vnd.4life.v1+json`)?**
   - É visível, fácil de testar com `curl`/navegador e de rotear no **Ingress e no gateway** por prefixo,
@@ -140,8 +141,9 @@ aplicadas). No `mobilizacoes-service`, que publica eventos, o `/ready` exige tam
   Quando um BFF precisa de uma quebra, ele faz a tradução.
 - **Política:** só versão *major* no caminho; mudanças aditivas não sobem versão; uma versão antiga é
   mantida por pelo menos um ciclo de release do app e sinalizada com o header `Deprecation`/`Sunset`.
-- **Estado atual:** os OpenAPI já declaram `info.version: 1.0.0`, e as rotas públicas hoje equivalem à `v1`.
-  A introdução do prefixo é uma regra a mais no gateway (`/api/v1/mobile` → `bff-mobile`).
+- **Estado do protótipo:** `info.version: 1.0.0` identifica a versão do documento, não implementa versionamento
+  da URI. O gateway atual ainda recebe `/api/mobile` e `/api/web`; o prefixo `/api/v1` é parte do contrato-alvo
+  e precisa ser introduzido antes de ser anunciado como ativo.
 
 ---
 
@@ -150,7 +152,7 @@ aplicadas). No `mobilizacoes-service`, que publica eventos, o `/ready` exige tam
 O recurso escolhido foi **Mobilização**, porque as ações disponíveis **dependem do estado** (há vagas?
 o usuário já se inscreveu? ele é admin?). O cliente não precisa reimplementar essas regras: basta seguir os links.
 
-`GET /api/v1/web/mobilizacoes/7f3c…` (usuário autenticado, ainda **sem** interesse, com vagas):
+`GET /api/v1/mobile/mobilizacoes/7f3c…` (usuário autenticado, ainda **sem** interesse, com vagas):
 
 ```json
 {
@@ -161,11 +163,8 @@ o usuário já se inscreveu? ele é admin?). O cliente não precisa reimplementa
   "vagas": 40, "totalInteressados": 31,
   "estado": "CONFIRMADA",
   "_links": {
-    "self":        { "href": "/api/v1/web/mobilizacoes/7f3c…", "method": "GET" },
-    "comunidade":  { "href": "/api/v1/web/comunidades/a12b…", "method": "GET" },
-    "hemocentro":  { "href": "/api/v1/web/info/hemocentros/c9d0…", "method": "GET" },
-    "interessados":{ "href": "/api/v1/web/mobilizacoes/7f3c…/interesses", "method": "GET" },
-    "registrar-interesse": { "href": "/api/v1/web/mobilizacoes/7f3c…/interesse", "method": "POST" }
+    "self":        { "href": "/api/v1/mobile/mobilizacoes/7f3c…", "method": "GET" },
+    "registrar-interesse": { "href": "/api/v1/mobile/mobilizacoes/7f3c…/interesse", "method": "POST" }
   }
 }
 ```
@@ -177,10 +176,11 @@ Os links mudam com o estado:
 | Sem interesse e com vagas | `registrar-interesse` |
 | Já inscrito | `cancelar-interesse` (`DELETE …/interesse`), sem `registrar-interesse` |
 | Vagas esgotadas | nem `registrar-interesse` nem `cancelar-interesse` (se não inscrito) |
-| Usuário é admin da comunidade | `editar` (`PATCH`), `cancelar` (`POST …/cancelamento`) |
 | `estado = PENDENTE` (SAGA em curso) | apenas `self` |
 
-Formato **HAL-like** (`_links` com `href` + `method`), montado no BFF, que é quem conhece o usuário e o cliente.
+Formato **HAL-like** (`_links` com `href` + `method`), montado no BFF mobile, que conhece o usuário atual.
+Neste desenho, os links cobrem apenas rotas que fazem parte do contrato do BFF mobile; links administrativos
+serão adicionados quando edição e cancelamento forem incluídos nesse contrato.
 
 ---
 
@@ -321,7 +321,7 @@ Sem JOIN nem FK entre bancos: as referências são **lógicas por id** (`mobiliz
 
 | Falha | Efeito |
 |---|---|
-| Broker fora do ar | ✅ mitigado: o pod sai do balanceamento (`/ready` exige o broker); se cair no meio, o evento vai para a `outbox` (fallback atual) |
+| Broker fora do ar | ⚠️ `/ready` exige broker; se cair durante a requisição, tenta-se gravar o evento na outbox como fallback não atômico |
 | Evento publicado antes de o consumidor subir | ✅ mitigado: publicador **e** consumidor declaram a fila `comunidades.mobilizacao-criada` e o binding (idempotente), então a mensagem não é descartada pela exchange topic |
 | **Processo morre entre 1 e 2** | ❌ mobilização existe, evento **perdido**, e o contador da comunidade fica errado para sempre |
 | Insert de fallback na outbox também falha | ❌ evento perdido (o fallback é *outra* escrita fora da transação) |
@@ -342,18 +342,22 @@ A tabela `outbox` **já existe em todos os bancos** e a interface `OutboxRelay` 
 ```mermaid
 sequenceDiagram
   participant BFF as bff-web
-  participant MS as mobilizacoes-service
+  participant O as Orquestrador (mobilizacoes)
+  participant C as comunidades-service
+  participant I as informacoes-service
   participant DB as mobilizacoes-db
   participant R as OutboxRelay
   participant MQ as RabbitMQ
   participant CS as comunidades-service
 
-  BFF->>MS: POST /mobilizacoes
-  MS->>DB: BEGIN
-  MS->>DB: INSERT mobilizacoes
-  MS->>DB: INSERT outbox (tipo='mobilizacao.criada', payload)
-  MS->>DB: COMMIT  (atômico: os dois ou nenhum)
-  MS-->>BFF: 201 Created
+  BFF->>O: POST /mobilizacoes
+  O->>DB: T1 BEGIN; INSERT mobilizacao PENDENTE + saga; COMMIT
+  O-->>BFF: 202 Accepted (Location: /mobilizacoes/{id})
+  O->>C: reservar-data(sagaId)
+  C-->>O: data-reservada
+  O->>I: reservar-janela(sagaId)
+  I-->>O: janela-reservada
+  O->>DB: T4 BEGIN; UPDATE CONFIRMADA + INSERT outbox; COMMIT
   loop a cada 500 ms
     R->>DB: SELECT … WHERE publicado_em IS NULL<br/>ORDER BY criado_em LIMIT 50 FOR UPDATE SKIP LOCKED
     R->>MQ: publish (persistent, messageId = outbox.id)
@@ -364,7 +368,7 @@ sequenceDiagram
   CS->>CS: INSERT eventos_processados ON CONFLICT DO NOTHING<br/>+ UPDATE total_mobilizacoes (mesma transação)
 ```
 
-- **Garantia:** *at-least-once* na publicação + consumidor idempotente = efeito **exactly-once**.
+- **Garantia projetada:** *at-least-once* na publicação + registro idempotente e transacional no consumidor = efeito de negócio efetivamente único. Isso depende de implementar o relay e a gravação transacional na outbox.
 - **`FOR UPDATE SKIP LOCKED`** permite várias réplicas do serviço rodando o relay sem publicar em duplicidade.
 - **Falha no publish:** `tentativas = tentativas + 1`, com backoff; acima de N tentativas o evento vai para alerta/DLQ.
 - **Ordem:** por `criado_em` dentro do mesmo agregado; o `id` do evento = `messageId` para deduplicação.
@@ -520,10 +524,10 @@ A resposta inclui `atualizadoEm` para a UI indicar quando o dado foi atualizado.
 | Tópico | Entregue na Parte 2 | Próximo passo |
 |---|---|---|
 | 4.1 Decomposição | ✅ 4 serviços + diagramas | — |
-| 4.2 REST | ✅ OpenAPI, verbos e status · 📐 versionamento e HATEOAS | prefixo `/v1` no gateway, `_links` no bff-web |
-| 4.3 Gateway | ✅ JWT, roteamento, sanitização · 📐 rate limiting | `@fastify/rate-limit` |
+| 4.2 REST | ✅ OpenAPI, verbos e status · 📐 versionamento e HATEOAS | introduzir prefixo `/v1` no gateway e emitir `_links` no BFF |
+| 4.3 Gateway | ✅ JWT, roteamento, sanitização · 📐 rate limiting | implementar `@fastify/rate-limit` |
 | 4.4 BFFs | ✅ mobile e web com respostas distintas | — |
-| 4.5 DB per service | ✅ 4 bancos isolados, inbox idempotente · 📐 outbox relay | implementar `OutboxRelay` |
+| 4.5 DB per service | ✅ 4 bancos isolados e inbox idempotente · 📐 outbox transacional e relay | gravar evento junto da escrita e implementar `OutboxRelay` |
 | 4.6 SAGA | 📐 orquestrada, 3 serviços, compensações e diagramas | implementar `OrquestradorSaga` |
 | 4.7 CQRS | 📐 projeção do painel, defasagem ≤ 5 s | implementar `Projecao` / `ConsultaPainel` |
 

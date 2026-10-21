@@ -194,6 +194,11 @@ O projeto é desenvolvido por uma equipe composta por quatro integrantes:
 
 ## Status do projeto
 
-💡 **Em concepção**
+🛠️ **Protótipo parcial e arquitetura documentada**
 
-O projeto **4Life** encontra-se atualmente em fase de concepção, com foco na definição do problema, da proposta de solução, do escopo e das principais funcionalidades da plataforma. A implementação do sistema será realizada nas próximas etapas do projeto.
+O repositório contém protótipos de serviços, gateway, BFFs e infraestrutura de
+execução, além da documentação arquitetural da Parte 2. Nem todos os fluxos do
+desenho-alvo estão implementados: versionamento URI `/api/v1`, HATEOAS,
+rate limiting, Transactional Outbox com relay, SAGA e CQRS permanecem decisões
+documentadas ou estruturas parciais. O estado de cada capacidade e suas
+diferenças em relação ao protótipo estão em [`docs/arquitetura.md`](docs/arquitetura.md).
