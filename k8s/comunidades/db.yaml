@@ -1,0 +1,82 @@
+# Banco exclusivo do comunidades-service: StatefulSet (identidade estável + PVC próprio), Service ClusterIP e Service headless.
+# Service ClusterIP: é o endereço usado pelo comunidades-service (DB_HOST=comunidades-db).
+# O VIP sempre resolve no DNS; o kube-proxy só encaminha quando o pod está Ready.
+apiVersion: v1
+kind: Service
+metadata:
+  name: comunidades-db
+  labels: { app.kubernetes.io/name: comunidades-db, app.kubernetes.io/component: database, app.kubernetes.io/part-of: 4life }
+spec:
+  type: ClusterIP
+  selector: { app.kubernetes.io/name: comunidades-db }
+  ports:
+    - { name: postgres, port: 5432, targetPort: postgres }
+---
+# Service headless: dá identidade de rede estável ao pod do StatefulSet (comunidades-db-0.comunidades-db-headless).
+# Não é usado pelos clientes: headless só publica DNS de pods prontos e o CoreDNS guarda a
+# resposta negativa em cache (até 30s), então o nome "some" logo depois de o banco reiniciar.
+apiVersion: v1
+kind: Service
+metadata:
+  name: comunidades-db-headless
+  labels: { app.kubernetes.io/name: comunidades-db, app.kubernetes.io/component: database, app.kubernetes.io/part-of: 4life }
+spec:
+  clusterIP: None
+  selector: { app.kubernetes.io/name: comunidades-db }
+  ports:
+    - { name: postgres, port: 5432, targetPort: postgres }
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: comunidades-db
+  labels: { app.kubernetes.io/name: comunidades-db, app.kubernetes.io/component: database, app.kubernetes.io/part-of: 4life }
+spec:
+  serviceName: comunidades-db-headless
+  replicas: 1
+  selector:
+    matchLabels: { app.kubernetes.io/name: comunidades-db }
+  template:
+    metadata:
+      labels: { app.kubernetes.io/name: comunidades-db, app.kubernetes.io/component: database, app.kubernetes.io/part-of: 4life }
+    spec:
+      securityContext:
+        fsGroup: 70            # usuário postgres da imagem alpine
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          ports:
+            - { name: postgres, containerPort: 5432 }
+          env:
+            - name: POSTGRES_DB
+              valueFrom: { configMapKeyRef: { name: comunidades-service-config, key: DB_NAME } }
+            - name: POSTGRES_USER
+              valueFrom: { configMapKeyRef: { name: comunidades-service-config, key: DB_USER } }
+            - name: POSTGRES_PASSWORD
+              valueFrom: { secretKeyRef: { name: comunidades-db-credentials, key: password } }
+            - name: PGDATA         # subdiretório: o volume pode vir com lost+found na raiz
+              value: /var/lib/postgresql/data/pgdata
+          volumeMounts:
+            - { name: dados, mountPath: /var/lib/postgresql/data }
+          resources:
+            requests: { cpu: 50m, memory: 128Mi }
+            limits: { cpu: "1", memory: 512Mi }
+          livenessProbe:
+            exec: { command: [sh, -c, 'pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB"'] }
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            failureThreshold: 6
+          readinessProbe:
+            exec: { command: [sh, -c, 'pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB"'] }
+            periodSeconds: 5
+            failureThreshold: 3
+  # Cada réplica ganha um PVC próprio (comunidades-db-dados-comunidades-db-0), que sobrevive à morte do pod.
+  volumeClaimTemplates:
+    - metadata:
+        name: dados
+        labels: { app.kubernetes.io/name: comunidades-db, app.kubernetes.io/part-of: 4life }
+      spec:
+        accessModes: [ReadWriteOnce]
+        resources:
+          requests: { storage: 1Gi }
