@@ -1,13 +1,8 @@
-# 4Life — Pitch da Parte 2: Arquitetura de Microsserviços
-
-> Roteiro de apresentação das mudanças da Parte 2. Cada seção `---` é um slide.
-> As linhas **🎤 Fala** sugerem o que dizer. Legenda de status:
-> **✅ implementado** (está no código) · **📐 projetado** (desenho pronto, a implementação
-> fica para a Parte 4, com a estrutura já reservada no repositório).
+# 4Life — Arquitetura de Microsserviços
 
 ---
 
-## 0. Abertura — do problema à arquitetura
+## Do problema à arquitetura
 
 - O 4Life conecta **hemocentros, comunidades e doadores** por meio de **mobilizações** de doação de sangue.
 - Na Parte 2 o monolito conceitual da Parte 1 virou um sistema distribuído:
@@ -16,12 +11,9 @@
   - **RabbitMQ** para os eventos entre domínios.
 - Tudo containerizado (Docker Compose) e orquestrado (Kubernetes/kind).
 
-🎤 **Fala:** "Pegamos o fluxo do doador (descobrir, se interessar, participar) e quebramos o sistema
-pelas fronteiras de negócio, não pelas camadas técnicas."
-
 ---
 
-## 4.1 Decomposição em microsserviços ✅
+## 1. Decomposição em microsserviços
 
 | Serviço | Responsabilidade | Dados próprios |
 |---|---|---|
@@ -47,32 +39,42 @@ pelas fronteiras de negócio, não pelas camadas técnicas."
 
 ---
 
-## 4.1 Diagrama de componentes e de comunicação
+## 1.1 Diagrama de componentes e de comunicação
 
 ```mermaid
 flowchart TB
-  subgraph Clientes
-    M[App mobile]
-    W[Aplicação web]
-  end
-  M & W -->|HTTPS| ING[Ingress 4life.test]
-  ING --> GW[API Gateway :8080<br/>JWT · roteamento · sanitização]
-  GW -->|/api/mobile/*| BM[bff-mobile :4001]
-  GW -->|/api/web/*<br/>/auth/login| BW[bff-web :4002]
+    subgraph Clientes
+        M["App mobile"]
+        W["Aplicação web"]
+    end
 
-  BM & BW -->|HTTP síncrono| D[doadores :3001]
-  BM & BW --> C[comunidades :3002]
-  BM & BW --> MO[mobilizacoes :3003]
-  BM & BW --> I[informacoes :3004]
+    M -->|HTTPS| ING["Ingress 4life.test"]
+    W -->|HTTPS| ING
 
-  D --- DD[(doadores-db)]
-  C --- CD[(comunidades-db)]
-  MO --- MD[(mobilizacoes-db)]
-  I --- ID[(informacoes-db)]
+    ING --> GW["API Gateway :8080<br/>JWT, roteamento e sanitização"]
 
-  MO -. publica mobilizacao.criada .-> RMQ{{RabbitMQ<br/>exchange topic 4life.events}}
-  RMQ -. consome .-> C
+    GW -->|/api/mobile/*| BM["bff-mobile :4001"]
+    GW -->|/api/web/* e /auth/login| BW["bff-web :4002"]
+
+    BM -->|HTTP síncrono| D["doadores :3001"]
+    BM --> C["comunidades :3002"]
+    BM --> MO["mobilizacoes :3003"]
+    BM --> I["informacoes :3004"]
+
+    BW -->|HTTP síncrono| D
+    BW --> C
+    BW --> MO
+    BW --> I
+
+    D --- DD[("doadores-db")]
+    C --- CD[("comunidades-db")]
+    MO --- MD[("mobilizacoes-db")]
+    I --- ID[("informacoes-db")]
+
+    MO -.->|publica mobilizacao.criada| RMQ{{"RabbitMQ<br/>exchange topic: 4life.events"}}
+    RMQ -.->|consome evento| C
 ```
+
 
 - **Síncrono (HTTP/JSON):** gateway → BFF → serviços. Usado em consultas e comandos do usuário.
 - **Assíncrono (RabbitMQ):** reações entre domínios, ex.: `mobilizacao.criada` incrementa o contador da comunidade.
@@ -81,7 +83,7 @@ flowchart TB
 
 ---
 
-## 4.2 API REST — contratos ✅
+## 2.0 API REST — contratos
 
 Contratos **OpenAPI 3.0** de todos os componentes em [`docs/api/`](../api/):
 
@@ -98,7 +100,7 @@ aplicadas). No `mobilizacoes-service`, que publica eventos, o `/ready` exige tam
 
 ---
 
-## 4.2 Recursos, verbos e códigos de status ✅
+## 2.1 Recursos, verbos e códigos de status
 
 **Recursos são substantivos e as relações aparecem como sub-recursos:**
 `/mobilizacoes/{id}/interesses/{doadorId}`, e não `/registrarInteresse`.
