@@ -214,7 +214,7 @@ No Kubernetes, o **Ingress encaminha somente para o gateway** (`/api`, `/auth`, 
 
 ---
 
-## 4.0 Backend for Frontend ✅
+## 4.0 Backend for Frontend
 
 | | **bff-mobile** | **bff-web** |
 |---|---|---|
@@ -233,7 +233,7 @@ a lista `avisos` explica o motivo. A tela abre mesmo assim.
 
 ---
 
-## 4.1 Mesma mobilização, duas respostas ✅
+## 4.1 Mesma mobilização, duas respostas
 
 **Mobile:** `GET /api/mobile/mobilizacoes?cidade=Lavras` (card)
 
