@@ -126,7 +126,7 @@ aplicadas). No `mobilizacoes-service`, que publica eventos, o `/ready` exige tam
 
 ---
 
-## 4.2 Estratégia de versionamento 📐
+## 2.2 Estratégia de versionamento 
 
 **Decisão: versão no caminho (URI), aplicada na borda: `/api/v1/mobile/...`, `/api/v1/web/...`.**
 
@@ -145,7 +145,7 @@ aplicadas). No `mobilizacoes-service`, que publica eventos, o `/ready` exige tam
 
 ---
 
-## 4.2 HATEOAS — recurso `Mobilização` 📐
+## 2.3 HATEOAS — `Mobilização`
 
 O recurso escolhido foi **Mobilização**, porque as ações disponíveis **dependem do estado** (há vagas?
 o usuário já se inscreveu? ele é admin?). O cliente não precisa reimplementar essas regras: basta seguir os links.
@@ -184,7 +184,7 @@ Formato **HAL-like** (`_links` com `href` + `method`), montado no BFF, que é qu
 
 ---
 
-## 4.3 API Gateway e gateway routing ✅
+## 3.0 API Gateway e gateway routing
 
 Gateway próprio em **Fastify + `@fastify/http-proxy`**, único ponto de entrada (ADR-0003).
 No Kubernetes, o **Ingress encaminha somente para o gateway** (`/api`, `/auth`, `/health`).
@@ -214,7 +214,7 @@ No Kubernetes, o **Ingress encaminha somente para o gateway** (`/api`, `/auth`, 
 
 ---
 
-## 4.4 Backend for Frontend ✅
+## 4.0 Backend for Frontend ✅
 
 | | **bff-mobile** | **bff-web** |
 |---|---|---|
@@ -233,7 +233,7 @@ a lista `avisos` explica o motivo. A tela abre mesmo assim.
 
 ---
 
-## 4.4 Mesma mobilização, duas respostas ✅
+## 4.1 Mesma mobilização, duas respostas ✅
 
 **Mobile:** `GET /api/mobile/mobilizacoes?cidade=Lavras` (card)
 
@@ -272,11 +272,9 @@ a lista `avisos` explica o motivo. A tela abre mesmo assim.
 6 campos contra 20+ campos e 2 objetos aninhados. O mobile recebe `vagasRestantes` pronto, e a web recebe
 os dados crus de `vagas`/`totalInteressados` para montar seus próprios gráficos.
 
-🎤 **Fala:** demonstrar ao vivo com `scripts/smoke-test.sh` ou `curl` nos dois prefixos.
-
 ---
 
-## 4.5 Database per service ✅
+## 5.0 Database per service 
 
 Quatro instâncias **PostgreSQL 16**, cada uma com credencial própria e inalcançável por qualquer outro
 componente (rede `data-<serviço>` / `NetworkPolicy`). As migrations rodam no boot com `pg_advisory_lock`.
@@ -298,7 +296,7 @@ Sem JOIN nem FK entre bancos: as referências são **lógicas por id** (`mobiliz
 
 ---
 
-## 4.5 Pontos de consistência eventual
+## 5.1 Pontos de consistência eventual
 
 | # | Dado | Fonte da verdade | Cópia/derivado | Como converge |
 |---|---|---|---|---|
@@ -312,7 +310,7 @@ Sem JOIN nem FK entre bancos: as referências são **lógicas por id** (`mobiliz
 
 ---
 
-## 4.5 Risco de dual write
+## 5.2 Risco de dual write
 
 **Onde existe hoje:** `mobilizacoes-service` em `POST /mobilizacoes` e `POST /mobilizacoes/{id}/interesses`.
 
@@ -336,7 +334,7 @@ de `mobilizacao.criada` (registro em `eventos_processados` + `UPDATE` na mesma t
 
 ---
 
-## 4.5 Padrão Transactional Outbox — fluxo `mobilizacao.criada` 📐
+## 5.3 Padrão Transactional Outbox — fluxo `mobilizacao.criada` 
 
 A tabela `outbox` **já existe em todos os bancos** e a interface `OutboxRelay` está em
 `services/mobilizacoes-service/src/outbox/relay.ts`.
@@ -374,7 +372,7 @@ sequenceDiagram
 
 ---
 
-## 4.6 SAGA — escolha: **orquestrada** 📐
+## 6.0 SAGA Orquestrada
 
 **Transação de negócio:** *Criar mobilização confirmada*, atravessando **3 serviços**:
 
@@ -404,7 +402,7 @@ testar. Os contratos (`PassoSaga`, `OrquestradorSaga`, `EstadoSaga`) já estão 
 
 ---
 
-## 4.6 Transações e compensações
+## 6.1 Transações e compensações
 
 | # | Serviço | Transação | Compensação | Tipo |
 |---|---|---|---|---|
@@ -420,7 +418,7 @@ testar. Os contratos (`PassoSaga`, `OrquestradorSaga`, `EstadoSaga`) já estão 
 
 ---
 
-## 4.6 Diagrama — caminho feliz
+## 6.2 Caminho Feliz
 
 ```mermaid
 sequenceDiagram
@@ -448,7 +446,7 @@ expõe ações quando o estado for `CONFIRMADA`.
 
 ---
 
-## 4.6 Diagrama — falha com compensação
+## 6.3 Falha com Compensação
 
 **Cenário:** o hemocentro não tem capacidade na janela pedida.
 
@@ -478,7 +476,7 @@ sequenceDiagram
 
 ---
 
-## 4.7 CQRS — painel da comunidade 📐
+## 7.0 CQRS — Painel da Comunidade
 
 **Serviço:** `comunidades-service` (estrutura em `src/cqrs/`, contrato `PainelComunidade`).
 
@@ -517,7 +515,7 @@ A resposta inclui `atualizadoEm` para a UI indicar quando o dado foi atualizado.
 
 ---
 
-## Encerramento — o que entregamos e o que vem
+## O que foi e o que será entregue
 
 | Tópico | Entregue na Parte 2 | Próximo passo |
 |---|---|---|
@@ -534,6 +532,3 @@ Deployments, Services, Ingress, ConfigMaps/Secrets, NetworkPolicies, HPA e scrip
 Bancos e RabbitMQ rodam em StatefulSets com Service **ClusterIP** para os clientes e Service **headless**
 para a identidade do pod. Com só o headless, o DNS do banco sumia por segundos depois de reiniciar o pod
 (cache negativo do CoreDNS); isso foi encontrado e corrigido nos testes de persistência.
-
-🎤 **Fala de fechamento:** "O sistema já roda isolado e escalável. As decisões de consistência estão
-desenhadas e com os ganchos no código, prontas para a próxima etapa."
