@@ -28,5 +28,5 @@ COPY migrations ./migrations
 USER node
 EXPOSE 3003
 HEALTHCHECK --interval=10s --timeout=3s --start-period=20s --retries=3 \
-  CMD wget -qO- http://127.0.0.1:${PORT}/health > /dev/null || exit 1
+  CMD wget -qO- http://127.0.0.1:${PORT}/ready > /dev/null || exit 1
 CMD ["node", "dist/server.js"]
